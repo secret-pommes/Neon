@@ -11,6 +11,7 @@ import error from "../utils/error";
 import token from "../utils/token";
 import utils from "../utils/utils";
 import log from "../utils/log";
+import profiles from "../model/profiles";
 
 export default class Fortnite {
   public route(app: Hono): void {
@@ -267,5 +268,42 @@ export default class Fortnite {
         ],
       });
     });
+
+    app.all(
+      "/api/game/v2/privacy/account/:accountId",
+      token.VerifyToken,
+      async (c) => {
+        const userObj = z.object({ accountId: z.string() });
+        const user = userObj.safeParse(c.req.param());
+        if (!user.success) return error.validation(c);
+
+        switch (c.req.method) {
+          case "GET": {
+            const Profiles = await profiles
+              .findOne({ accountId: user.data.accountId })
+              .lean();
+            return c.json({
+              accountId: user.data.accountId,
+              optOutOfPublicLeaderboards: Profiles?.optOutOfPublicLeaderboards,
+            });
+          }
+          case "POST": {
+            const { optOutOfPublicLeaderboards } = await c.req.json();
+            await profiles.updateOne(
+              { accountId: user.data.accountId },
+              { optOutOfPublicLeaderboards }
+            );
+            return c.json({
+              accountId: user.data.accountId,
+              optOutOfPublicLeaderboards,
+            });
+          }
+
+          default: {
+            return error.method(c);
+          }
+        }
+      }
+    );
   }
 }

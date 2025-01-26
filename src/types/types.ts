@@ -110,3 +110,11 @@ export type slot = {
     favorite: boolean;
   };
 };
+
+export type FriendsResponse = {
+  accountId: string;
+  status: string;
+  direction: string;
+  created: string;
+  favorite: boolean;
+};

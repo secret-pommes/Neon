@@ -309,5 +309,21 @@ export default class Account {
 
       return c.json(resp ? resp : []);
     });
+
+    app.all("/api/public/account/displayName/:displayName", async (c) => {
+      if (c.req.method !== "GET") return error.method(c);
+      const paramsObj = z.object({ displayName: z.string() });
+      const paramsRes = paramsObj.safeParse(c.req.param());
+      if (!paramsRes.success) return error.validation(c);
+      const Account = await account
+        .findOne({ displayName: paramsRes.data.displayName })
+        .lean();
+      if (!Account) return error.notFound(c, "account");
+      return c.json({
+        id: Account.accountId,
+        displayName: Account.displayName,
+        externalAuths: {},
+      });
+    });
   }
 }
