@@ -1,0 +1,82 @@
+{
+  "created": "",
+  "updated": "",
+  "rvn": 1,
+  "wipeNumber": 1,
+  "accountId": "",
+  "profileId": "theater0",
+  "version": "no_version",
+  "items": {},
+  "stats": {
+    "attributes": {
+      "player_loadout": {
+        "bPlayerIsNew": false,
+        "pinnedSchematicInstances": [],
+        "primaryQuickBarRecord": {
+          "slots": [
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            }
+          ]
+        },
+        "secondaryQuickBarRecord": {
+          "slots": [
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            },
+            {
+              "items": []
+            }
+          ]
+        },
+        "zonesCompleted": 0
+      },
+      "theater_unique_id": "",
+      "past_lifetime_zones_completed": 0,
+      "last_event_instance_key": "",
+      "last_zones_completed": 0,
+      "inventory_limit_bonus": 0
+    }
+  },
+  "profileLockExpiration": "",
+  "commandRevision": 1
+}
