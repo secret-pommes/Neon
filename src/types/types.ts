@@ -87,3 +87,26 @@ export type HotfixResp = {
   storageIds: Record<string, unknown>;
   doNotCache: boolean;
 };
+
+export type variants = {
+  active: string;
+  channel: string;
+  owned: string[];
+};
+
+export type slot = {
+  templateId: string;
+  quantity: number;
+  attributes: {
+    max_level_bonus: number;
+    level: number;
+    item_seen: boolean;
+    xp: number;
+    variants: {
+      channel: string;
+      active: string;
+      owned: string[];
+    }[];
+    favorite: boolean;
+  };
+};
