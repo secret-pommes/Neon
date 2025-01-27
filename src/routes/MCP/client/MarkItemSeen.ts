@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import MCPErrors from "../../../utils/MCPErrors";
 import profiles from "../../../model/profiles";
-import utils from "../../../utils/utils";
 
 class Route {
   public async route(c: Context): Promise<any> {
@@ -27,11 +26,15 @@ class Route {
       ]),
       rvn: z.string().transform((v) => Number(v)),
     });
+    const bodyObj = z.object({
+      itemIds: z.array(z.string()),
+    });
 
     const paramsRes = paramsObj.safeParse(c.req.param());
     const queryRes = queryObj.safeParse(c.req.query());
+    const bodyRes = bodyObj.safeParse(await c.req.json());
 
-    if (!paramsRes.success || !queryRes.success) {
+    if (!paramsRes.success || !queryRes.success || !bodyRes.success) {
       return MCPErrors.validation(c, "mcp");
     }
 
@@ -43,20 +46,37 @@ class Route {
     const baseRevision: number = profile.rvn;
     const commandRevision: number = profile.commandRevision;
 
-    profile.accountId = paramsRes.data.accountId;
-
-    if (queryRes.data.profileId === "athena") {
-      const { seasonInt } = utils.FNVer(c);
-      profile.stats.attributes.season_num = Number.isNaN(seasonInt)
-        ? 0
-        : seasonInt;
-    }
-
     if (!profile) {
       return MCPErrors.notFound(c, "profile");
     }
 
+    if (
+      queryRes.data.profileId !== "athena" &&
+      queryRes.data.profileId !== "common_core"
+    ) {
+      return MCPErrors.profileNotFound("MarkItemSeen", queryRes.data.profileId);
+    }
+
+    let bChanged = false;
     let profileChanges: any[] = [];
+    const itemIds = bodyRes.data.itemIds;
+
+    for (const id in itemIds) {
+      profile.items[itemIds[id]].attributes.item_seen = true;
+      profileChanges.push({
+        changeType: "itemAttrChanged",
+        attributeName: "item_seen",
+        itemId: itemIds[id],
+        attributeValue: profile.items[itemIds[id]].attributes.item_seen,
+      });
+      bChanged = true;
+    }
+
+    if (bChanged) {
+      profile.rvn++;
+      profile.commandRevision++;
+      profile.updated = new Date().toISOString();
+    }
 
     if (baseRevision !== queryRes.data.rvn) {
       profileChanges = [
@@ -67,6 +87,10 @@ class Route {
       ];
     }
 
+    await profiles.updateOne(
+      { accountId: paramsRes.data.accountId },
+      { $set: { [queryRes.data.profileId]: profile } }
+    );
     return {
       profileRevision: profile.rvn,
       profileId: queryRes.data.profileId,

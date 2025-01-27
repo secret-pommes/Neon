@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import MCPErrors from "../../../utils/MCPErrors";
 import profiles from "../../../model/profiles";
-import { slot, variants } from "../../../types/types";
+import { slot } from "../../../types/types";
 
 class Route {
   public async route(c: Context): Promise<any> {
@@ -11,10 +11,21 @@ class Route {
       accountId: z.string(),
     });
     const queryObj = z.object({
-      profileId: z.string(),
-      rvn: z.string().transform((v) => {
-        return Number(v);
-      }),
+      profileId: z.enum([
+        "athena",
+        "campaign",
+        "collection_book_people0",
+        "collection_book_schematics0",
+        "collections",
+        "common_core",
+        "common_public",
+        "creative",
+        "metadata",
+        "outpost0",
+        "profile0",
+        "theater0",
+      ]),
+      rvn: z.string().transform((v) => Number(v)),
     });
     const bodyObj = z.object({
       slotName: z.string(),
@@ -64,38 +75,47 @@ class Route {
     let bChanged = false;
 
     switch (bodyRes.data.slotName) {
-    case "Character": {
-      profile.stats.attributes.favorite_character = bodyRes.data.itemToSlot;
+      case "Character": {
+        profile.stats.attributes.favorite_character = bodyRes.data.itemToSlot;
 
-      if (Array.isArray(bodyRes.data.variantUpdates) && bodyRes.data.variantUpdates.length > 0) {
-        for (const variantUpdate of bodyRes.data.variantUpdates) {
-        const { channel, active } = variantUpdate;
-        const slot: slot = profile.items[bodyRes.data.itemToSlot];
-        if (!slot || !channel || !active) continue;
+        if (
+          Array.isArray(bodyRes.data.variantUpdates) &&
+          bodyRes.data.variantUpdates.length > 0
+        ) {
+          for (const variantUpdate of bodyRes.data.variantUpdates) {
+            const { channel, active } = variantUpdate;
+            const slot: slot = profile.items[bodyRes.data.itemToSlot];
+            if (!slot || !channel || !active) continue;
 
-        const ownedVariants = slot.attributes.variants;
-        if (!ownedVariants) continue;
+            const ownedVariants = slot.attributes.variants;
+            if (!ownedVariants) continue;
 
-        const variantIndex = ownedVariants.findIndex((v) => v.channel === channel);
-        if (variantIndex === -1) continue;
+            const variantIndex = ownedVariants.findIndex(
+              (v) => v.channel === channel
+            );
+            if (variantIndex === -1) continue;
 
-        const ownsVariant = ownedVariants[variantIndex].owned.includes(active);
-        if (!ownsVariant) continue;
+            const ownsVariant =
+              ownedVariants[variantIndex].owned.includes(active);
+            if (!ownsVariant) continue;
 
-        profile.items[bodyRes.data.itemToSlot].attributes.variants[variantIndex].active = active;
+            profile.items[bodyRes.data.itemToSlot].attributes.variants[
+              variantIndex
+            ].active = active;
 
-        profileChanges.push({
-          changeType: "itemAttrChanged",
-          attributeName: "variants",
-          itemId: bodyRes.data.itemToSlot,
-          attributeValue: profile.items[bodyRes.data.itemToSlot].attributes.variants,
-        });
+            profileChanges.push({
+              changeType: "itemAttrChanged",
+              attributeName: "variants",
+              itemId: bodyRes.data.itemToSlot,
+              attributeValue:
+                profile.items[bodyRes.data.itemToSlot].attributes.variants,
+            });
+          }
         }
-      }
 
-      bChanged = true;
-      break;
-    }
+        bChanged = true;
+        break;
+      }
       case "Backpack": {
         profile.stats.attributes.favorite_backpack = bodyRes.data.itemToSlot;
         bChanged = true;

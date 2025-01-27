@@ -77,8 +77,8 @@ export default class Content {
             _type: "Battle Royale News",
             _title: "BattlePassAboutMessages",
             _noIndex: false,
-            _activeDate: "2018-06-20T18:15:07.002Z",
-            lastModified: "2019-10-14T20:42:20.253Z",
+            _activeDate: "2000-01-01T00:00:00.000Z",
+            lastModified: "2000-01-01T00:00:00.000Z",
             _locale: "en-US",
             messages: [
               {
@@ -98,7 +98,7 @@ export default class Content {
                 hidden: false,
                 _type: "CommonUI Simple Message Base",
                 title: "WHAT’S INSIDE?",
-                body: "When you buy the Battle Pass, you’ll instantly receive two exclusive outfits - Calamity and DJ Yonder! You can also earn exclusive rewards including emotes, outfits, gliders, sprays, loading screens, pickaxes and new surprises. You’ll receive a reward each time you level up. 100 tiers total for over 100 rewards.\n\n\nThere’s also new challenges every week! These challenges unlock even more Battle Pass rewards.",
+                body: "When you buy the Battle Pass, you’ll instantly receive two exclusive outfits - Calamity and DJ Yonder! You can also earn exclusive rewards including emotes, outfits, gliders, sprays, loading screens, pickaxes and new surprises. You’ll receive a reward each time you level up. 100 tiers total for over 100 rewards.\n\nThere’s also new challenges every week! These challenges unlock even more Battle Pass rewards.",
                 spotlight: false,
               },
               {

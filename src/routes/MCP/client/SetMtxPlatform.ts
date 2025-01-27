@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import MCPErrors from "../../../utils/MCPErrors";
 import profiles from "../../../model/profiles";
-import utils from "../../../utils/utils";
 
 class Route {
   public async route(c: Context): Promise<any> {
@@ -11,10 +10,21 @@ class Route {
       accountId: z.string(),
     });
     const queryObj = z.object({
-      profileId: z.string(),
-      rvn: z.string().transform((v) => {
-        return Number(v);
-      }),
+      profileId: z.enum([
+        "athena",
+        "campaign",
+        "collection_book_people0",
+        "collection_book_schematics0",
+        "collections",
+        "common_core",
+        "common_public",
+        "creative",
+        "metadata",
+        "outpost0",
+        "profile0",
+        "theater0",
+      ]),
+      rvn: z.string().transform((v) => Number(v)),
     });
     const bodyObj = z.object({ newPlatform: z.string() });
 

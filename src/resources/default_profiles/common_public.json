@@ -9,9 +9,9 @@
   "items": {},
   "stats": {
     "attributes": {
-      "banner_color": "DefaultColor15",
-      "homebase_name": "Nord West Bahn",
-      "banner_icon": "SurvivalBannerStonewoodComplete"
+      "banner_color": "",
+      "homebase_name": "",
+      "banner_icon": ""
     }
   },
   "commandRevision": 1
