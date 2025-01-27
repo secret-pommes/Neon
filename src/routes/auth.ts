@@ -32,7 +32,7 @@ export default class Auth {
               code: queryRes.data.code,
               client_id: safety.env.DISCORD_CLIENT_ID,
               client_secret: safety.env.DISCORD_CLIENT_SECRET,
-              redirect_uri: `http://127.0.0.1:1000/auth/api/discord/callback`,
+              redirect_uri: safety.env.DISCORD_URI,
               grant_type: "authorization_code",
             },
             {

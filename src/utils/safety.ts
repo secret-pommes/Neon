@@ -16,6 +16,7 @@ const safetyObj = z.object({
   DISCORD_CLIENT_ID: z.string(),
   DISCORD_CLIENT_SECRET: z.string(),
   DISCORD_GUILD_ID: z.string(),
+  DISCORD_URI: z.string(),
 });
 
 class Safety {
@@ -36,6 +37,7 @@ class Safety {
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     DISCORD_GUILD_ID: process.env.DISCORD_GUILD_ID,
+    DISCORD_URI: process.env.DISCORD_URI
   });
 
   public env: z.infer<typeof safetyObj> = {
@@ -53,6 +55,7 @@ class Safety {
     DISCORD_CLIENT_ID: this.data.DISCORD_CLIENT_ID,
     DISCORD_CLIENT_SECRET: this.data.DISCORD_CLIENT_SECRET,
     DISCORD_GUILD_ID: this.data.DISCORD_GUILD_ID,
+    DISCORD_URI: this.data.DISCORD_URI
   };
 }
 
