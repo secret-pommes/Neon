@@ -1,66 +1,93 @@
 import { Hono } from "hono";
+import { z } from "zod";
+import axios from "axios";
 
+import safety from "../utils/safety";
 import utils from "../utils/utils";
 import error from "../utils/error";
 import account from "../model/account";
 import profiles from "../model/profiles";
 import friends from "../model/friends";
+import { DiscordServerResp } from "../types/types";
 
 export default class Auth {
   public route(app: Hono): void {
-   /* app.all("/api/create", async (c) => {
-      const sub = utils.getId();
-      const acc = new account({
-        accountId: sub,
-        email: "secret@.",
-        password: "1",
-        displayName: "not_secret1337",
-        discordId: "0",
+    app.all("/api/discord/redirect", (c) => {
+      if (c.req.method !== "GET") return error.method(c);
+      return c.redirect(safety.env.DISCORD_REDIRECT_URI);
+    });
+
+    app.all("/api/discord/callback", async (c) => {
+      const queryObj = z.object({
+        code: z.string(),
       });
-      const fri = new friends({ accountId: sub });
-      const pro = new profiles({ accountId: sub });
+      const queryRes = queryObj.safeParse(c.req.query());
+      if (!queryRes.success) return error.validation(c);
 
-      pro.athena.created = new Date().toISOString();
-      pro.campaign.created = new Date().toISOString();
-      pro.collection_book_people0.created = new Date().toISOString();
-      pro.collection_book_schematics0.created = new Date().toISOString();
-      pro.collections.created = new Date().toISOString();
-      pro.common_core.created = new Date().toISOString();
-      pro.common_public.created = new Date().toISOString();
-      pro.creative.created = new Date().toISOString();
-      pro.metadata.created = new Date().toISOString();
-      pro.outpost0.created = new Date().toISOString();
-      pro.profile0.created = new Date().toISOString();
-      pro.theater0.created = new Date().toISOString();
+      try {
+        const access: { status: number; data: { access_token: string } } =
+          await axios.post(
+            "https://discord.com/api/v7/oauth2/token",
+            {
+              code: queryRes.data.code,
+              client_id: safety.env.DISCORD_CLIENT_ID,
+              client_secret: safety.env.DISCORD_CLIENT_SECRET,
+              redirect_uri: `http://127.0.0.1:1000/auth/api/discord/callback`,
+              grant_type: "authorization_code",
+            },
+            {
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+            }
+          );
 
-      pro.athena.updated = new Date().toISOString();
-      pro.campaign.updated = new Date().toISOString();
-      pro.collection_book_people0.updated = new Date().toISOString();
-      pro.collection_book_schematics0.updated = new Date().toISOString();
-      pro.collections.updated = new Date().toISOString();
-      pro.common_core.updated = new Date().toISOString();
-      pro.common_public.updated = new Date().toISOString();
-      pro.creative.updated = new Date().toISOString();
-      pro.metadata.updated = new Date().toISOString();
-      pro.outpost0.updated = new Date().toISOString();
-      pro.profile0.updated = new Date().toISOString();
-      pro.theater0.updated = new Date().toISOString();
+        const server: { data: DiscordServerResp; status: number } =
+          await axios.get(
+            `https://discord.com/api/users/@me/guilds/${safety.env.DISCORD_GUILD_ID}/member`,
+            {
+              headers: {
+                Authorization: `Bearer ${access.data.access_token}`,
+              },
+            }
+          );
 
-      pro.athena.accountId = sub;
-      pro.campaign.accountId = sub;
-      pro.collection_book_people0.accountId = sub;
-      pro.collection_book_schematics0.accountId = sub;
-      pro.collections.accountId = sub;
-      pro.common_core.accountId = sub;
-      pro.common_public.accountId = sub;
-      pro.creative.accountId = sub;
-      pro.metadata.accountId = sub;
-      pro.outpost0.accountId = sub;
-      pro.profile0.accountId = sub;
-      pro.theater0.accountId = sub;
+        if (server.status !== 200 || !server.data.joined_at) {
+          return error.authFailed(c);
+        }
 
-      await Promise.all([acc.save(), fri.save(), pro.save()]);
-      return c.json({ success: true });
-    });*/
+        const existingAccount = await account
+          .findOne({
+            discordId: server.data.user.id,
+          })
+          .lean();
+        if (existingAccount) {
+          return c.text(
+            `Welcome back, ${existingAccount.displayName}\n\nEMAIL: ${existingAccount.email}\nPASSWORD: ${existingAccount.password}`
+          );
+        }
+
+        const accountId = utils.getId();
+        const acc = new account({
+          email: `${utils.getUUID()}@neon.dev`,
+          password: utils.getUUID(),
+          discordId: server.data.user.id,
+          displayName: server.data.user.global_name,
+          accountId,
+        });
+        const fri = new friends({ accountId });
+        const pro = new profiles({ accountId });
+
+        acc.save();
+        fri.save();
+        pro.save();
+
+        return c.text(
+          `Welcome ${acc.displayName}\n\nEMAIL: ${acc.email}\nPASSWORD: ${acc.password}`
+        );
+      } catch {
+        return error.serverError(c, "auth");
+      }
+    });
   }
 }

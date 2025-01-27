@@ -139,6 +139,22 @@ class Error {
       401
     );
   }
+
+  public serverError(
+    c: Context,
+    originatingService: string = "fortnite"
+  ): Response {
+    return this.send(
+      c,
+      "errors.com.epicgames.server_error",
+      "Internal Epic Error",
+      [],
+      1012,
+      originatingService,
+      "prod-live",
+      500
+    );
+  }
 }
 
 export default new Error();

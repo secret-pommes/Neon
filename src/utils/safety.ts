@@ -12,6 +12,10 @@ const safetyObj = z.object({
   REDIS_HOST: z.string(),
   REDIS_PORT: z.number(),
   REDIS_DB: z.number(),
+  DISCORD_REDIRECT_URI: z.string(),
+  DISCORD_CLIENT_ID: z.string(),
+  DISCORD_CLIENT_SECRET: z.string(),
+  DISCORD_GUILD_ID: z.string(),
 });
 
 class Safety {
@@ -28,6 +32,10 @@ class Safety {
       ? parseInt(process.env.REDIS_PORT)
       : 6379,
     REDIS_DB: process.env.REDIS_DB ? parseInt(process.env.REDIS_DB) : 0,
+    DISCORD_REDIRECT_URI: process.env.DISCORD_REDIRECT_URI,
+    DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
+    DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+    DISCORD_GUILD_ID: process.env.DISCORD_GUILD_ID,
   });
 
   public env: z.infer<typeof safetyObj> = {
@@ -41,6 +49,10 @@ class Safety {
     REDIS_HOST: this.data.REDIS_HOST,
     REDIS_PORT: this.data.REDIS_PORT,
     REDIS_DB: this.data.REDIS_DB,
+    DISCORD_REDIRECT_URI: this.data.DISCORD_REDIRECT_URI,
+    DISCORD_CLIENT_ID: this.data.DISCORD_CLIENT_ID,
+    DISCORD_CLIENT_SECRET: this.data.DISCORD_CLIENT_SECRET,
+    DISCORD_GUILD_ID: this.data.DISCORD_GUILD_ID,
   };
 }
 

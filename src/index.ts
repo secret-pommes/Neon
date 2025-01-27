@@ -25,6 +25,7 @@ mongoose
 })();
 
 app.notFound((c) => error.notFound(c, "common"));
+app.onError((err, c) => error.serverError(c));
 
 //dbstuff.ResetProfile("c6a16e8fc28f41ee8dc4502426d5dbc3");
 

@@ -35,8 +35,6 @@ class Route {
     const queryRes = queryObj.safeParse(c.req.query());
     const bodyRes = bodyObj.safeParse(await c.req.json());
 
-    console.log(paramsRes.success, queryRes.success, bodyRes.success);
-
     if (!paramsRes.success || !queryRes.success || !bodyRes.success) {
       return MCPErrors.validation(c, "mcp");
     }
@@ -44,6 +42,8 @@ class Route {
     const Profiles: any = await profiles
       .findOne({ accountId: paramsRes.data.accountId })
       .lean();
+
+    if (!Profiles) return MCPErrors.authFailed(c);
 
     const profile = Profiles[queryRes.data.profileId];
     const baseRevision: number = profile.rvn;

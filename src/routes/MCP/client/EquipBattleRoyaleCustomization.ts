@@ -63,6 +63,8 @@ class Route {
       .findOne({ accountId: paramsRes.data.accountId })
       .lean();
 
+    if (!Profiles) return MCPErrors.authFailed(c);
+
     const profile = Profiles[queryRes.data.profileId];
     const baseRevision: number = profile.rvn;
     const commandRevision: number = profile.commandRevision;
