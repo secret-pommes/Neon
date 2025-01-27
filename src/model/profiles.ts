@@ -48,6 +48,7 @@ export default mongoose.model(
       PendingProfileChangesCommonCore: { type: Array, default: [] },
       PendingProfileChangesCommonPublic: { type: Array, default: [] },
       optOutOfPublicLeaderboards: { type: Boolean, default: false },
+      cloudstorage: { type: String, default: "" },
     },
     {
       collection: "Profiles",

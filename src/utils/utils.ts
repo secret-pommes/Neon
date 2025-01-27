@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { z } from "zod";
 import crypto from "node:crypto";
-import { FNVer } from "../types/types";
+import { ClientInfo, FNVer } from "../types/types";
 
 class Utils {
   public getId(): string {
@@ -36,6 +36,30 @@ class Utils {
     final.seasonStr = data["user-agent"].split("-")[1].split(".")[0];
     final.versionInt = Number(data["user-agent"].split("-")[1].split("-")[0]);
     final.versionStr = data["user-agent"].split("-")[1].split("-")[0];
+
+    return final;
+  }
+
+  public ClientInfo(c: Context): ClientInfo {
+    let final: ClientInfo = {
+      platform: "win",
+      NT: "0",
+    };
+
+    const headerObj = z.object({
+      "user-agent": z.string(),
+    });
+
+    const { success, data } = headerObj.safeParse(c.req.header());
+    if (!success) return final;
+
+    final.platform = data["user-agent"].split(" ")[1].split("/")[0];
+    final.NT =
+      final.platform.toLowerCase() === "windows"
+        ? `${data["user-agent"].split("/")[2].split(".")[0]}.${
+            data["user-agent"].split("/")[2].split(".")[1]
+          }`
+        : "0";
 
     return final;
   }

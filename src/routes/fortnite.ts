@@ -214,8 +214,11 @@ export default class Fortnite {
       const files = fs
         .readdirSync(base, "utf8")
         .filter((file) => file.endsWith(".ini"));
-      const sanitizedFile = path.basename(paramsRes.data.file);
-      const file = files.find((x) => x === sanitizedFile);
+      const sanitized = path.basename(paramsRes.data.file);
+      if (!sanitized.endsWith(".ini")) return error.notFound(c);
+      const resolved = path.resolve(base, sanitized);
+      if (!resolved.startsWith(base)) return error.notFound(c);
+      const file = files.find((x) => x === sanitized);
       if (!file) return error.notFound(c);
       const content = fs.readFileSync(path.join(base, file), "utf8");
       return c.newResponse(content, {
@@ -225,17 +228,83 @@ export default class Fortnite {
 
     app.all("/api/cloudstorage/user/:accountId", async (c) => {
       if (c.req.method !== "GET") return error.method(c);
-      return c.json([]);
+      const paramsObj = z.object({ accountId: z.string() });
+      const paramsRes = paramsObj.safeParse(c.req.param());
+      if (!paramsRes.success) return error.validation(c);
+      const Profiles = await profiles
+        .findOne({ accountId: paramsRes.data.accountId })
+        .lean();
+      if (!Profiles) return error.notFound(c);
+      if (!Profiles.cloudstorage) return c.json([]);
+      const platform = utils
+        .ClientInfo(c)
+        .platform.toLowerCase() as keyof typeof platformFiles;
+
+      const platformFiles = {
+        windows: "ClientSettings.Sav",
+        switch: "ClientSettingsSwitch.Sav",
+        android: "ClientSettingsAndroid.Sav",
+        ios: "ClientSettingsIOS.Sav",
+        ps4: "ClientSettingsPS4.Sav",
+      };
+
+      const fileName = platformFiles[platform];
+      return c.json([
+        {
+          uniqueFilename: fileName,
+          filename: fileName,
+          hash: crypto
+            .createHash("sha1")
+            .update(Profiles.cloudstorage)
+            .digest("hex"),
+          hash256: crypto
+            .createHash("sha256")
+            .update(Profiles.cloudstorage)
+            .digest("hex"),
+          length: Profiles.cloudstorage.length,
+          contentType: "application/octet-stream",
+          uploaded: "2000-01-01T00:00:00.000Z",
+          storageType: "",
+          storageIds: {},
+          accountId: paramsRes.data.accountId,
+          doNotCache: false,
+          platform,
+        },
+      ]);
     });
 
     app.all(
       "/api/cloudstorage/user/:accountId/:file",
       token.VerifyToken,
-      (c) => {
-        if (c.req.method !== "GET" && c.req.method !== "PUT") {
-          return error.method(c);
+      async (c) => {
+        const paramsObj = z.object({ accountId: z.string(), file: z.string() });
+        const paramsRes = paramsObj.safeParse(c.req.param());
+        if (!paramsRes.success) return error.validation(c);
+        switch (c.req.method) {
+          case "GET": {
+            const Profiles = await profiles.findOne({
+              accountId: paramsRes.data.accountId,
+            });
+            if (!Profiles) return error.notFound(c);
+            if (!Profiles.cloudstorage) {
+              return c.newResponse("", { status: 204 });
+            }
+
+            c.header("Content-Type", "application/octet-stream");
+            return c.body(Profiles.cloudstorage);
+          }
+          case "PUT": {
+            const data = await c.req.arrayBuffer();
+            await profiles.updateOne(
+              { accountId: paramsRes.data.accountId },
+              { cloudstorage: Buffer.from(data).toString("utf-8") }
+            );
+            return c.newResponse("", { status: 204 });
+          }
+          default: {
+            return error.method(c);
+          }
         }
-        return c.newResponse("", { status: 204 });
       }
     );
 

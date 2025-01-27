@@ -75,6 +75,11 @@ export type FNVer = {
   versionInt: number;
 };
 
+export type ClientInfo = {
+  platform: string;
+  NT: string,
+};
+
 export type HotfixResp = {
   uniqueFilename: string;
   filename: string;
