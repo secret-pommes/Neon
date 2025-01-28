@@ -44,8 +44,16 @@ class Route {
     const profile = Profiles[queryRes.data.profileId];
     const baseRevision: number = profile.rvn;
     const commandRevision: number = profile.commandRevision;
+    let bChanged = false;
 
-    profile.accountId = paramsRes.data.accountId;
+    if (!profile.accountId) {
+      profile.accountId = paramsRes.data.accountId;
+      bChanged = true;
+    }
+    if (!profile.created) {
+      profile.created = new Date().toISOString();
+      bChanged = true;
+    }
 
     if (queryRes.data.profileId === "athena") {
       const { seasonInt } = utils.FNVer(c);
@@ -69,6 +77,12 @@ class Route {
       ];
     }
 
+    if (bChanged) {
+      await profiles.updateOne(
+        { accountId: paramsRes.data.accountId },
+        { $set: { [queryRes.data.profileId]: profile } }
+      );
+    }
     return {
       profileRevision: profile.rvn,
       profileId: queryRes.data.profileId,

@@ -1,6 +1,7 @@
 import { Context } from "hono";
 import { z } from "zod";
 import crypto from "node:crypto";
+import Pako from "pako";
 import { ClientInfo, FNVer } from "../types/types";
 
 class Utils {
@@ -68,6 +69,22 @@ class Utils {
     const d = new Date();
     d.setHours(23, 59, 59, 999);
     return d.toISOString();
+  }
+
+  public compressArrayBuffer(s: ArrayBuffer): string {
+    try {
+      const d = Buffer.from(Pako.deflate(s)).toString("base64");
+      return d;
+    } catch {}
+    return "";
+  }
+
+  public decompressArrayBuffer(s: string): string {
+    try {
+      const d = Pako.inflate(Buffer.from(s, "base64"), { to: "string" });
+      return d;
+    } catch {}
+    return "";
   }
 }
 

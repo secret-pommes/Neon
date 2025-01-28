@@ -4,7 +4,8 @@
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/jsonwebtoken": "^9.0.8"
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/pako": "^2.0.3"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -20,6 +21,7 @@
     "ioredis": "^5.4.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
+    "pako": "^2.1.0",
     "zod": "^3.24.1"
   }
 }

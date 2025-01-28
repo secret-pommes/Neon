@@ -31,7 +31,7 @@ export default class Account {
       const headerObj = z.object({
         authorization: z.string(),
         "user-agent": z.string(),
-        "x-epic-correlation-id": z.string(),
+        "x-epic-correlation-id": z.string().optional(),
         "x-real-ip": z.string().optional(),
         host: z.string(),
       });
